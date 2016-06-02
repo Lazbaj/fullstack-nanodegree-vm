@@ -20,10 +20,22 @@ session = DBSession()
 
 ### Functions used in webserver.py ###
 
+## Return all the item in 'Restaurant' table
 def getRestaurants():
-    restaurants = session.query(Restaurant.name).order_by(Restaurant.name.asc()).all()
+    restaurants = session.query(Restaurant.name, Restaurant.id).order_by(Restaurant.name.asc()).all()
     return restaurants
 
+## Create a new entry for the table 'Restaurant'
+def addRestaurant(new_name):
+    new_restaurant = Restaurant(name = new_name)
+    session.add(new_restaurant)
+    session.commit()
+
+## Delete a specific entry in the table 'Restaurant'
+def deleteRestaurant(restaurant_id):
+    to_delete = session.query(Restaurant).filter_by(id = restaurant_id).one()
+    session.delete(to_delete)
+    session.commit()
 
 
 ### Other examples from first lesson ###
@@ -51,13 +63,13 @@ def getRestaurants():
 # firsResult = session.query(Restaurant).first()
 # print firsResult.name
 
-# ## Print names of all elements in table 'Restaurant'
+## Print names of all elements in table 'Restaurant'
 # restaurants = session.query(Restaurant).all()
 # for restaurant in restaurants:
 #     print restaurant.name
 #     print restaurant.id
 
-# ## Print names of all elements in table 'MenuItem'
+## Print names of all elements in table 'MenuItem'
 # items = session.query(MenuItem).all()
 # for item in items:
 #     print item.name
