@@ -52,6 +52,24 @@ class webserverHandler(BaseHTTPRequestHandler):
                 self.wfile.write(output)
                 return
 
+            ## Page '/delete' to request confirmation to delete a restaurant
+            if self.path.endswith('/delete'):
+                pathlist = self.path.split("/")
+                restaurant_id = pathlist [-2]
+                restaurant_name = crud.getRestaurantName(restaurant_id)
+
+                self.send_response(200)
+                self.send_header('Content-type', 'text/html')
+                self.end_headers()
+
+                output = ""
+                output += "<html><body>"
+                output += "<h1>Are you sure you want to delete %s?</h1>" % restaurant_name
+                output += '''<form method='POST' enctype='multipart/form-data' action='/restaurants/%s/delete'><input type="submit" value="Delete"> </form>''' % restaurant_id
+                output += "</body></html>"
+                self.wfile.write(output)
+                return
+
         except IOError:
             self.send_error(404, 'File Not Found: %s' % self.path)
 
@@ -97,6 +115,19 @@ class webserverHandler(BaseHTTPRequestHandler):
                     self.send_header('Content-type', 'text/html')
                     self.send_header('Location', '/restaurants')
                     self.end_headers()
+
+            ## POST '/delete' to delete a restaurant
+            if self.path.endswith('/delete'):
+
+                pathlist = self.path.split("/")
+                restaurant_id = pathlist [-2]
+
+                crud.deleteRestaurant(restaurant_id)
+
+                self.send_response(301)
+                self.send_header('Content-type', 'text/html')
+                self.send_header('Location', '/restaurants')
+                self.end_headers()
 
         except:
             pass
