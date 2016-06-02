@@ -5,6 +5,7 @@ import crud
 class webserverHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         try:
+            ## Home page '/restaurants'
             if self.path.endswith('/restaurants'):
                 self.send_response(200)
                 self.send_header('Content-type', 'text/html')
@@ -19,6 +20,7 @@ class webserverHandler(BaseHTTPRequestHandler):
                 self.wfile.write(output)
                 return
 
+            ## Page '/new' to create a new restaurant
             if self.path.endswith('/new'):
                 self.send_response(200)
                 self.send_header('Content-type', 'text/html')
@@ -32,11 +34,30 @@ class webserverHandler(BaseHTTPRequestHandler):
                 self.wfile.write(output)
                 return
 
+            ## Page '/edit' to rename a restaurant
+            if self.path.endswith('/edit'):
+                pathlist = self.path.split("/")
+                restaurant_id = pathlist [-2]
+                restaurant_name = crud.getRestaurantName(restaurant_id)
+
+                self.send_response(200)
+                self.send_header('Content-type', 'text/html')
+                self.end_headers()
+
+                output = ""
+                output += "<html><body>"
+                output += "<h1>%s</h1>" % restaurant_name
+                output += '''<form method='POST' enctype='multipart/form-data' action='/restaurants/%s/edit'><input name="new_name" type="text" placeholder="New name"><input type="submit" value="Rename"> </form>''' % restaurant_id
+                output += "</body></html>"
+                self.wfile.write(output)
+                return
+
         except IOError:
             self.send_error(404, 'File Not Found: %s' % self.path)
 
     def do_POST(self):
         try:
+            ## POST '/new' to add a restaurant
             if self.path.endswith('restaurants/new'):
                 ctype, pdict = cgi.parse_header(self.headers.getheader('content-type'))
 
@@ -58,6 +79,24 @@ class webserverHandler(BaseHTTPRequestHandler):
                     # output += "<a href='/restaurants'>BACK</a><br>"
                     # output += "</body></html>"
                     # self.wfile.write(output)
+
+            ## POST '/edit' to rename a restaurant
+            if self.path.endswith('/edit'):
+                ctype, pdict = cgi.parse_header(self.headers.getheader('content-type'))
+
+                if ctype == 'multipart/form-data':
+                    pathlist = self.path.split("/")
+                    restaurant_id = pathlist [-2]
+
+                    fields=cgi.parse_multipart(self.rfile, pdict)
+                    new_name = fields.get('new_name')
+
+                    crud.renameRestaurant(restaurant_id, new_name[0])
+
+                    self.send_response(301)
+                    self.send_header('Content-type', 'text/html')
+                    self.send_header('Location', '/restaurants')
+                    self.end_headers()
 
         except:
             pass

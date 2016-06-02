@@ -25,10 +25,21 @@ def getRestaurants():
     restaurants = session.query(Restaurant.name, Restaurant.id).order_by(Restaurant.name.asc()).all()
     return restaurants
 
+def getRestaurantName(restaurant_id):
+    restaurant = session.query(Restaurant.name).filter_by(id = restaurant_id).one()
+    return restaurant
+
 ## Create a new entry for the table 'Restaurant'
 def addRestaurant(new_name):
     new_restaurant = Restaurant(name = new_name)
     session.add(new_restaurant)
+    session.commit()
+
+## Rename a specific entry in the table 'Restaurant'
+def renameRestaurant(restaurant_id,new_name):
+    to_rename = session.query(Restaurant).filter_by(id = restaurant_id).one()
+    to_rename.name = new_name
+    session.add(to_rename)
     session.commit()
 
 ## Delete a specific entry in the table 'Restaurant'
@@ -36,7 +47,6 @@ def deleteRestaurant(restaurant_id):
     to_delete = session.query(Restaurant).filter_by(id = restaurant_id).one()
     session.delete(to_delete)
     session.commit()
-
 
 ### Other examples from first lesson ###
 
